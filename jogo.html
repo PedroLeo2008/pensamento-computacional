@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto - Consciência Negra</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #labirinto {
+            display: grid;
+            grid-template-columns: repeat(5, 50px);
+            grid-gap: 5px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            position: relative;
+        }
+
+        .player {
+            background-color: #333;
+        }
+
+        .enemy {
+            background-color: orange;
+        }
+
+        .exit {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="labirinto"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const labirinto = document.getElementById('labirinto');
+            const rows = 5;
+            const cols = 5;
+
+            // Crie o labirinto
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    labirinto.appendChild(cell);
+                }
+            }
+
+            let playerPosition = { x: 0, y: 0 };
+            let enemyPosition = { x: cols - 1, y: rows - 1 };
+            let exitPosition = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+
+            // Garanta que a posição da saída não seja a mesma do jogador ou inimigo
+            while (
+                (exitPosition.x === playerPosition.x && exitPosition.y === playerPosition.y) ||
+                (exitPosition.x === enemyPosition.x && exitPosition.y === enemyPosition.y)
+            ) {
+                exitPosition = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+            }
+
+            updatePlayerPosition();
+            updateEnemyPosition();
+            updateExitPosition();
+
+            // Adicione um ouvinte de eventos para as teclas do teclado
+            document.addEventListener('keydown', (event) => {
+                movePlayer(event.key);
+            });
+
+            function movePlayer(direction) {
+                switch (direction) {
+                    case 'ArrowUp':
+                        if (playerPosition.y > 0) {
+                            playerPosition.y--;
+                        }
+                        break;
+                    case 'ArrowDown':
+                        if (playerPosition.y < rows - 1) {
+                            playerPosition.y++;
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        if (playerPosition.x > 0) {
+                            playerPosition.x--;
+                        }
+                        break;
+                    case 'ArrowRight':
+                        if (playerPosition.x < cols - 1) {
+                            playerPosition.x++;
+                        }
+                        break;
+                    default:
+                        return;
+                }
+
+                updatePlayerPosition();
+                moveEnemy(); // Mova o inimigo após o movimento do jogador
+                checkCollision();
+                checkWin();
+            }
+
+            function moveEnemy() {
+                // Simples lógica de perseguição: mova em direção ao jogador
+                if (enemyPosition.x < playerPosition.x) {
+                    enemyPosition.x++;
+                } else if (enemyPosition.x > playerPosition.x) {
+                    enemyPosition.x--;
+                }
+
+                if (enemyPosition.y < playerPosition.y) {
+                    enemyPosition.y++;
+                } else if (enemyPosition.y > playerPosition.y) {
+                    enemyPosition.y--;
+                }
+
+                updateEnemyPosition();
+            }
+
+            function updatePlayerPosition() {
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach((cell) => cell.classList.remove('player'));
+
+                const playerIndex = playerPosition.y * cols + playerPosition.x;
+                cells[playerIndex].classList.add('player');
+            }
+
+            function updateEnemyPosition() {
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach((cell) => cell.classList.remove('enemy'));
+
+                const enemyIndex = enemyPosition.y * cols + enemyPosition.x;
+                cells[enemyIndex].classList.add('enemy');
+            }
+
+            function updateExitPosition() {
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach((cell) => cell.classList.remove('exit'));
+
+                const exitIndex = exitPosition.y * cols + exitPosition.x;
+                cells[exitIndex].classList.add('exit');
+            }
+
+            function checkCollision() {
+                if (playerPosition.x === enemyPosition.x && playerPosition.y === enemyPosition.y) {
+                    alert('Você foi pego pelo inimigo! Game over!');
+                    resetGame();
+                }
+            }
+
+            function checkWin() {
+                if (playerPosition.x === exitPosition.x && playerPosition.y === exitPosition.y) {
+                    alert('Você venceu! Parabéns!');
+                    resetGame();
+                }
+            }
+
+            function resetGame() {
+                playerPosition = { x: 0, y: 0 };
+                enemyPosition = { x: cols - 1, y: rows - 1 };
+                exitPosition = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+
+                // Garanta que a posição da saída não seja a mesma do jogador ou inimigo
+                while (
+                    (exitPosition.x === playerPosition.x && exitPosition.y === playerPosition.y) ||
+                    (exitPosition.x === enemyPosition.x && exitPosition.y === enemyPosition.y)
+                ) {
+                    exitPosition = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+                }
+
+                updatePlayerPosition();
+                updateEnemyPosition();
+                updateExitPosition();
+            }
+        });
+    </script>
+</body>
+</html>
